@@ -13,5 +13,9 @@
         "psr-0": {
             "Jleagle\\PHPGazelle": "src"
         }
+    },
+    "require": {
+        "guzzlehttp/guzzle": "~4.0",
+        "guzzle/plugin-cookie": "3.7.*@dev"
     }
 }
