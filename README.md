@@ -32,7 +32,9 @@ Each API parameter can be added by chaining methods.
 Just end the chain with get().
 
 `https://what.cd/ajax.php?action=inbox&page=1&type=inbox&sort=unread`
+
 is the same as
+
 `$gazelle->inbox()->page(1)->type('inbox')->sort('unread')->get();`
 
 #### Inbox
