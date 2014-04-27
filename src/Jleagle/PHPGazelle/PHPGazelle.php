@@ -11,34 +11,11 @@ use GuzzleHttp\Cookie\CookieJar;
 class PHPGazelle
 {
 
-    /**
-     * @var string
-     */
     private $username;
-
-    /**
-     * @var string
-     */
     private $password;
-
-    /**
-     * @var bool
-     */
     private $loggedIn = false;
-
-    /**
-     * @var string
-     */
     private $api;
-
-    /**
-     * @var array
-     */
     private $query = array();
-
-    /**
-     * @var \GuzzleHttp\Cookie\CookieJar
-     */
     private $cookieJar;
 
     /**
