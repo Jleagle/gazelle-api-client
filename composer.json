@@ -1,5 +1,5 @@
 {
-    "name": "jleagle/php-gazelle",
+    "name": "jleagle/gazelle-api-client",
     "keywords": ["gazelle", "what", "cd", "what.cd"],
     "description": "A PHP wrapper class for Gazelle, the popular BitTorrent private tracker framework.",
     "authors": [
