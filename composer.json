@@ -1,23 +1,27 @@
 {
-    "name": "jleagle/gazelle-api-client",
-    "keywords": ["gazelle", "what", "cd", "what.cd"],
-    "description": "A PHP wrapper class for Gazelle, the popular BitTorrent private tracker framework.",
-    "authors": [
-        {
-            "name": "James Eagle",
-            "email": "jimeagle@gmail.com",
-            "homepage": "http://jimeagle.com",
-            "role": "Developer"
-        }
-    ],
-    "autoload": {
-        "psr-0": {
-            "Jleagle\\PHPGazelle": "src"
-        }
-    },
-    "require": {
-        "php": ">=5.3.0",
-        "guzzlehttp/guzzle": "~4.0",
-        "guzzle/plugin-cookie": "3.7.*@dev"
+  "name": "jleagle/gazelle-api-client",
+  "keywords": [
+    "gazelle",
+    "what",
+    "cd",
+    "what.cd"
+  ],
+  "description": "A PHP wrapper class for Gazelle, the popular BitTorrent private tracker framework.",
+  "authors": [
+    {
+      "name": "James Eagle",
+      "email": "jimeagle@gmail.com",
+      "homepage": "http://jimeagle.com"
     }
+  ],
+  "autoload": {
+    "psr-0": {
+      "Jleagle\\PHPGazelle": "src"
+    }
+  },
+  "require": {
+    "php": ">=5.3.0",
+    "guzzlehttp/guzzle": "~5.0",
+    "guzzle/plugin-cookie": "3.7.*@dev"
+  }
 }
