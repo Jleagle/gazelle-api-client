@@ -9,14 +9,14 @@ Add PHPGazelle to your `composer.json`:
 
     {
         "require": {
-            "jleagle/php-gazelle": "dev-master"
+            "jleagle/gazelle-api-client": "dev-master"
         }
     }
 
 
 Update composer to download the package
 
-    $ php composer.phar update jleagle/php-gazelle
+    $ php composer.phar update jleagle/gazelle-api-client
 
 Enable the package:
 ```php
