@@ -1,14 +1,10 @@
 <?php
-namespace Jleagle\PHPGazelle;
+namespace Jleagle\Gazelle;
 
 use \GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 
-/**
- * Class PHPGazelle
- * @package Jleagle\PHPGazelle
- */
-class PHPGazelle
+class Gazelle
 {
 
     private $username;

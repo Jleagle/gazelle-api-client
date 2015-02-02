@@ -1,7 +1,7 @@
-PHPGazelle
-==========
+gazelle-api-client
+==================
 
-A PHP wrapper class for [Gazelle](https://github.com/WhatCD/Gazelle/wiki/JSON-API-Documentation), the popular BitTorrent private tracker framework.
+A helper class to access the API on [Gazelle](https://github.com/WhatCD/Gazelle/wiki/JSON-API-Documentation) sites
 
 ## Installation
 
