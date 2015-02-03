@@ -17,10 +17,12 @@ Add Gazelle to composer and run `composer update`:
 
 Instantiate the class using your website username and password:
 
+```php
 $gazelle = new \Jleagle\Gazelle\Gazelle(
 	$username,
 	$password
 );
+```
 
 Example API calls:
 
