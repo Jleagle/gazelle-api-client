@@ -3,62 +3,31 @@ gazelle-api-client
 
 A helper class to access the API on [Gazelle](https://github.com/WhatCD/Gazelle/wiki/JSON-API-Documentation) sites
 
-## Installation
+### Installation
 
-Add PHPGazelle to your `composer.json`:
+Add Gazelle to composer and run `composer update`:
 
-    {
-        "require": {
-            "jleagle/gazelle-api-client": "dev-master"
-        }
-    }
+```json
+"require": {
+    "jleagle/gazelle-api-client": "*"
+}
+```
 
+### Usage
 
-Update composer to download the package
+Instantiate the class using your website username and password:
 
-    $ php composer.phar update jleagle/gazelle-api-client
-
-Enable the package:
-```php
-$gazelle = new \Jleagle\PHPGazelle\PHPGazelle(
+$gazelle = new \Jleagle\Gazelle\Gazelle(
 	$username,
 	$password
 );
-```
 
-## Examples
-
-Each API parameter can be added by chaining methods.
-Just end the chain with get().
-
-`https://what.cd/ajax.php?action=inbox&page=1&type=inbox&sort=unread`
-
-is the same as
-
-`$gazelle->inbox()->page(1)->type('inbox')->sort('unread')->get();`
-
-#### Inbox
+Example API calls:
 
 ```php
-$inbox = $gazelle->inbox()->get();
+// Get the forums
+$forums = $gazelle->getForumMain();
 
-$conversation = $gazelle->inbox()->type('viewconv')->id(123)->get();
-```
-
-#### Torrents
-
-```php
-$torrent = $gazelle->torrent()->id(31421250)->get();
-
-$group = $gazelle->torrentgroup()->id(72710033)->get();
-```
-
-#### Forums
-
-```php
-$forums = $gazelle->forum()->type('main')->get();
-
-$forum = $gazelle->forum()->type('viewforum')->forumid(7)->get();
-
-$thread = $gazelle->forum()->type('viewthread')->threadid(117192)->get();
+// Get announcements
+$announcements = $gazelle->announcements();
 ```
