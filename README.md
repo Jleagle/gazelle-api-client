@@ -1,6 +1,9 @@
 gazelle-api-client
 ==================
 
+[![Build Status (Scrutinizer)](https://scrutinizer-ci.com/g/Jleagle/gazelle-api-client/badges/build.png)](https://scrutinizer-ci.com/g/Jleagle/gazelle-api-client)
+[![Code Quality (scrutinizer)](https://scrutinizer-ci.com/g/Jleagle/gazelle-api-client/badges/quality-score.png)](https://scrutinizer-ci.com/g/Jleagle/gazelle-api-client)
+
 A helper class to access the API on [Gazelle](https://github.com/WhatCD/Gazelle/wiki/JSON-API-Documentation) sites
 
 ### Installation
