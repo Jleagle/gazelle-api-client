@@ -8,14 +8,15 @@ class Gazelle
 {
   private $_username;
   private $_password;
-  private $_url = 'https://what.cd/';
+  private $_url;
   private $_loggedIn = false;
   private $_cookieJar;
 
-  public function __construct($username, $password)
+  public function __construct($username, $password, $url = 'https://what.cd')
   {
     $this->_username = $username;
     $this->_password = $password;
+    $this->_url = $url;
     $this->_cookieJar = new CookieJar();
   }
 
