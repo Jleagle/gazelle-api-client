@@ -1,23 +1,42 @@
 <?php
 namespace Jleagle\Gazelle;
 
-use GuzzleHttp\Client;
-use GuzzleHttp\Cookie\CookieJar;
+use Jleagle\CurlWrapper\Curl;
+use Jleagle\CurlWrapper\Header\CookieJar;
+use Jleagle\Gazelle\Enums\BookmarkType;
 
 class Gazelle
 {
-  private $_username;
-  private $_password;
-  private $_url;
-  private $_loggedIn = false;
-  private $_cookieJar;
+  /**
+   * @var string
+   */
+  protected $_username;
 
-  public function __construct($username, $password, $url = 'https://what.cd/')
+  /**
+   * @var string
+   */
+  protected $_password;
+
+  /**
+   * @var string
+   */
+  protected $_url;
+
+  /**
+   * @var CookieJar
+   */
+  protected $_cookieJar;
+
+  /**
+   * @param string $username
+   * @param string $password
+   * @param string $url
+   */
+  public function __construct($username, $password, $url = 'https://what.cd')
   {
     $this->_username = $username;
     $this->_password = $password;
-    $this->_url = $url;
-    $this->_cookieJar = new CookieJar();
+    $this->_url = trim($url, '/');
   }
 
   /**
@@ -25,7 +44,7 @@ class Gazelle
    */
   public function getIndex()
   {
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'index',
       ]
@@ -39,7 +58,7 @@ class Gazelle
    */
   public function getUser($id)
   {
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'user',
         'id'     => $id,
@@ -60,7 +79,7 @@ class Gazelle
     $page = 1, $type = 'inbox', $sort = null, $search = null, $searchType = null
   )
   {
-    return $this->get(
+    return $this->_get(
       [
         'action'     => 'inbox',
         'page'       => $page,
@@ -79,7 +98,7 @@ class Gazelle
    */
   public function getInboxConversation($id)
   {
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'inbox',
         'type'   => 'viewconv',
@@ -96,7 +115,7 @@ class Gazelle
    */
   public function getTopTen($type = 'torrents', $limit = 25)
   {
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'top10',
         'type'   => $type,
@@ -111,9 +130,9 @@ class Gazelle
    *
    * @return array
    */
-  public function getUserSearch($search, $page = 1)
+  public function searchUsers($search, $page = 1)
   {
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'usersearch',
         'search' => $search,
@@ -132,10 +151,10 @@ class Gazelle
    * @return mixed
    */
   public function getRequests(
-    $search, $tag, $page = 1, $tags_type = 0, $show_filled = false
+    $search = '', $tag = '', $page = 1, $tags_type = 0, $show_filled = false
   )
   {
-    return $this->get(
+    return $this->_get(
       [
         'action'      => 'requests',
         'search'      => $search,
@@ -153,9 +172,9 @@ class Gazelle
    *
    * @return array
    */
-  public function getBrowse($searchstr, $page = 1)
+  public function searchTorrents($searchstr, $page = 1)
   {
-    return $this->get(
+    return $this->_get(
       [
         'action'    => 'browse',
         'searchstr' => $searchstr,
@@ -165,13 +184,13 @@ class Gazelle
   }
 
   /**
-   * @param $type - one of torrents, artists
+   * @param $type - BookmarkType
    *
    * @return array
    */
-  public function getBookmarks($type = 'torrents')
+  public function getBookmarks($type = BookmarkType::TORRENTS)
   {
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'bookmarks',
         'type'   => $type,
@@ -186,7 +205,7 @@ class Gazelle
    */
   public function getSubscriptions($showunread = 1)
   {
-    return $this->get(
+    return $this->_get(
       [
         'action'     => 'subscriptions',
         'showunread' => $showunread,
@@ -197,9 +216,9 @@ class Gazelle
   /**
    * @return array
    */
-  public function getForumMain()
+  public function getForumCategories()
   {
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'forum',
         'type'   => 'main',
@@ -213,9 +232,9 @@ class Gazelle
    *
    * @return array
    */
-  public function getForumForum($forumid, $page = 1)
+  public function getForum($forumid, $page = 1)
   {
-    return $this->get(
+    return $this->_get(
       [
         'action'  => 'forum',
         'type'    => 'viewforum',
@@ -234,10 +253,10 @@ class Gazelle
    * @return array
    */
   public function getForumThread(
-    $threadid, $postid, $page = 1, $updatelastread = 0
+    $threadid, $postid = null, $page = 1, $updatelastread = 0
   )
   {
-    return $this->get(
+    return $this->_get(
       [
         'action'         => 'forum',
         'type'           => 'viewthread',
@@ -255,9 +274,9 @@ class Gazelle
    *
    * @return array
    */
-  public function artist($id = null, $artistname = null)
+  public function getArtist($id = null, $artistname = null)
   {
-    return $this->get(
+    return $this->_get(
       [
         'action'     => 'artist',
         'id'         => $id,
@@ -272,11 +291,11 @@ class Gazelle
    *
    * @return array
    */
-  public function torrent($id = null, $hash = null)
+  public function getTorrent($id = null, $hash = null)
   {
     $hash = strtoupper($hash);
 
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'torrent',
         'id'     => $id,
@@ -291,11 +310,11 @@ class Gazelle
    *
    * @return array
    */
-  public function torrentGroup($id = null, $hash = null)
+  public function getTorrentGroup($id = null, $hash = null)
   {
     $hash = strtoupper($hash);
 
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'torrentgroup',
         'id'     => $id,
@@ -310,9 +329,9 @@ class Gazelle
    *
    * @return array
    */
-  public function request($id, $page = 1)
+  public function getRequest($id, $page = 1)
   {
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'request',
         'id'     => $id,
@@ -326,9 +345,9 @@ class Gazelle
    *
    * @return array
    */
-  public function collage($id)
+  public function getCollage($id)
   {
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'collage',
         'id'     => $id,
@@ -341,9 +360,9 @@ class Gazelle
    *
    * @return array
    */
-  public function notifications($page = 1)
+  public function getNotifications($page = 1)
   {
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'notifications',
         'page'   => $page,
@@ -357,9 +376,9 @@ class Gazelle
    *
    * @return array
    */
-  public function similarArtists($id, $limit)
+  public function getSimilarArtists($id, $limit = 10)
   {
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'similar_artists',
         'id'     => $id,
@@ -371,69 +390,73 @@ class Gazelle
   /**
    * @return array
    */
-  public function announcements()
+  public function getAnnouncements()
   {
-    return $this->get(
+    return $this->_get(
       [
         'action' => 'announcements',
       ]
     );
   }
 
+  /**
+   * @param $url
+   *
+   * @return $this
+   */
   public function setUrl($url)
   {
     $this->_url = $url;
     return $this;
   }
 
-  public function setCookieJar(CookieJar $jar)
+  /**
+   * @param CookieJar $cookieJar
+   *
+   * @return $this
+   */
+  public function setCookieJar(CookieJar $cookieJar)
   {
-    $this->_cookieJar = $jar;
-    $this->_loggedIn = true;
+    $this->_cookieJar = $cookieJar;
     return $this;
   }
 
+  /**
+   * @return CookieJar
+   */
   public function getCookieJar()
   {
     return $this->_cookieJar;
   }
 
-  private function get($params = [])
+  /**
+   * @param array $params
+   *
+   * @return mixed
+   */
+  protected function _get($params = [])
   {
-    if(!$this->_loggedIn)
+    // Go and get a session cookie
+    if(!$this->_cookieJar instanceof CookieJar)
     {
-      $this->login();
+      $login = Curl
+        ::post(
+          $this->_url . '/login.php',
+          [
+            'username' => $this->_username,
+            'password' => $this->_password,
+          ]
+        )
+        ->run();
+
+      $this->_cookieJar = $login->getCookies();
     }
 
-    $client = new Client();
-    $res = $client->post(
-      $this->_url . 'ajax.php?' . http_build_query($params),
-      [
-        'cookies' => $this->_cookieJar
-      ]
-    );
-
-    return $res->json();
-  }
-
-  public function login()
-  {
-    $url = $this->_url . 'login.php';
-
-    $client = new Client();
-    $client->post(
-      $url,
-      [
-        'cookies' => $this->_cookieJar,
-        'body'    => [
-          'username'   => $this->_username,
-          'password'   => $this->_password,
-          'keeplogged' => 1,
-          'login'      => 'Login',
-        ]
-      ]
-    );
-
-    $this->_loggedIn = true;
+    // Make the request
+    return Curl
+      ::get($this->_url . '/ajax.php', $params)
+      ->setCookies($this->_cookieJar)
+      ->run()
+      ->getJson();
   }
 }

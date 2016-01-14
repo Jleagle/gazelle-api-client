@@ -22,8 +22,7 @@
     }
   },
   "require": {
-    "php": ">=5.3.0",
-    "guzzlehttp/guzzle": "5.*",
-    "guzzle/plugin-cookie": "3.*"
+    "php": ">=5.4.0",
+    "jleagle/curl-wrapper": "~1.0"
   }
 }
