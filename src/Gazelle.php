@@ -279,18 +279,18 @@ class Gazelle
   }
 
   /**
-   * @param string $searchstr - string to search for
-   * @param int    $page      - page to display
+   * @param string $searchString - string to search for
+   * @param int    $page         - page to display
    *
    * @return TorrentSearchResponse
    */
-  public function getTorrents($searchstr, $page = 1)
+  public function getTorrents($searchString, $page = 1)
   {
     $response = new TorrentSearchResponse(
       $this->_get(
         [
           'action'    => 'browse',
-          'searchstr' => $searchstr,
+          'searchstr' => $searchString,
           'page'      => $page,
         ]
       )
@@ -349,16 +349,16 @@ class Gazelle
   }
 
   /**
-   * @param bool $showunread - 1 to show only unread, 0 for all subscriptions
+   * @param bool $showUnread - 1 to show only unread, 0 for all subscriptions
    *
    * @return SubscriptionResponse[]
    */
-  public function getSubscriptions($showunread = true)
+  public function getSubscriptions($showUnread = true)
   {
     $response = $this->_get(
       [
         'action'     => 'subscriptions',
-        'showunread' => $showunread ? 1 : 0,
+        'showunread' => $showUnread ? 1 : 0,
       ]
     );
 
@@ -400,19 +400,19 @@ class Gazelle
   }
 
   /**
-   * @param int $forumid - id of the forum to display
+   * @param int $forumId - id of the forum to display
    * @param int $page    - the page to display
    *
    * @return ForumResponse
    */
-  public function getForum($forumid, $page = 1)
+  public function getForum($forumId, $page = 1)
   {
     $response = new ForumResponse(
       $this->_get(
         [
           'action'  => 'forum',
           'type'    => 'viewforum',
-          'forumid' => $forumid,
+          'forumid' => $forumId,
           'page'    => $page,
         ]
       )
@@ -427,15 +427,15 @@ class Gazelle
   }
 
   /**
-   * @param int $threadid       - id of the thread to display
-   * @param int $postid         - response will be the page including the post with this id
-   * @param int $page           - page to display
-   * @param int $updatelastread - set to 1 to not update the last read id
+   * @param int  $threadId       - id of the thread to display
+   * @param int  $postId         - response will be the page including the post with this id
+   * @param int  $page           - page to display
+   * @param bool $updateLastRead - set to 1 to not update the last read id
    *
    * @return ForumThreadResponse
    */
   public function getForumThread(
-    $threadid, $postid = null, $page = 1, $updatelastread = 0
+    $threadId, $postId = null, $page = 1, $updateLastRead = false
   )
   {
     $response = new ForumThreadResponse(
@@ -443,10 +443,10 @@ class Gazelle
         [
           'action'         => 'forum',
           'type'           => 'viewthread',
-          'threadid'       => $threadid,
-          'postid'         => $postid,
+          'threadid'       => $threadId,
+          'postid'         => $postId,
           'page'           => $page,
-          'updatelastread' => $updatelastread,
+          'updatelastread' => $updateLastRead ? 1 : 0,
         ]
       )
     );
@@ -461,18 +461,18 @@ class Gazelle
 
   /**
    * @param int    $artistId   - artist's id
-   * @param string $artistname - Artist's Name
+   * @param string $artistName - Artist's Name
    *
    * @return ArtistResponse
    */
-  public function getArtist($artistId = null, $artistname = null)
+  public function getArtist($artistId = null, $artistName = null)
   {
     return new ArtistResponse(
       $this->_get(
         [
           'action'     => 'artist',
           'id'         => $artistId,
-          'artistname' => $artistname,
+          'artistname' => $artistName,
         ]
       )
     );
