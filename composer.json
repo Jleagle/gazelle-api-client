@@ -23,6 +23,7 @@
   },
   "require": {
     "php": ">=5.4.0",
-    "jleagle/curl-wrapper": "~1.0"
+    "jleagle/curl-wrapper": "~1.0",
+    "jleagle/helpers": "~0.0"
   }
 }

@@ -2,8 +2,56 @@
 namespace Jleagle\Gazelle;
 
 use Jleagle\CurlWrapper\Curl;
+use Jleagle\CurlWrapper\Exceptions\CurlException;
+use Jleagle\CurlWrapper\Exceptions\CurlInvalidJsonException;
 use Jleagle\CurlWrapper\Header\CookieJar;
-use Jleagle\Gazelle\Enums\BookmarkType;
+use Jleagle\Gazelle\Enums\GazelleApiStatus;
+use Jleagle\Gazelle\Enums\GazelleMessagesSort;
+use Jleagle\Gazelle\Enums\GazelleMessagesType;
+use Jleagle\Gazelle\Enums\GazelleRequestsShowFilled;
+use Jleagle\Gazelle\Enums\GazelleRequestsTagsType;
+use Jleagle\Gazelle\Enums\GazelleTopTenType;
+use Jleagle\Gazelle\Exceptions\GazelleApiFailureException;
+use Jleagle\Gazelle\Responses\AnnouncementsBlogResultResponse;
+use Jleagle\Gazelle\Responses\AnnouncementsResponse;
+use Jleagle\Gazelle\Responses\AnnouncementsResultResponse;
+use Jleagle\Gazelle\Responses\ArtistResponse;
+use Jleagle\Gazelle\Responses\BookmarkArtistResponse;
+use Jleagle\Gazelle\Responses\BookmarkTorrentResponse;
+use Jleagle\Gazelle\Responses\CollageResponse;
+use Jleagle\Gazelle\Responses\CollageResultResponse;
+use Jleagle\Gazelle\Responses\ForumCategoriesResponse;
+use Jleagle\Gazelle\Responses\ForumCategoriesResultResponse;
+use Jleagle\Gazelle\Responses\ForumResponse;
+use Jleagle\Gazelle\Responses\ForumResultResponse;
+use Jleagle\Gazelle\Responses\ForumThreadResponse;
+use Jleagle\Gazelle\Responses\ForumThreadResultResponse;
+use Jleagle\Gazelle\Responses\InboxConversationResponse;
+use Jleagle\Gazelle\Responses\InboxConversationResultResponse;
+use Jleagle\Gazelle\Responses\InboxResponse;
+use Jleagle\Gazelle\Responses\InboxResultResponse;
+use Jleagle\Gazelle\Responses\IndexResponse;
+use Jleagle\Gazelle\Responses\NotificationsResponse;
+use Jleagle\Gazelle\Responses\NotificationsResultResponse;
+use Jleagle\Gazelle\Responses\RequestResponse;
+use Jleagle\Gazelle\Responses\RequestsResponse;
+use Jleagle\Gazelle\Responses\RequestsResultResponse;
+use Jleagle\Gazelle\Responses\SimilarArtistsResponse;
+use Jleagle\Gazelle\Responses\SimilarArtistsResultResponse;
+use Jleagle\Gazelle\Responses\SubscriptionResponse;
+use Jleagle\Gazelle\Responses\TopTenResponse;
+use Jleagle\Gazelle\Responses\TopTenResultResponse;
+use Jleagle\Gazelle\Responses\TorrentGroupInfoResponse;
+use Jleagle\Gazelle\Responses\TorrentGroupResponse;
+use Jleagle\Gazelle\Responses\TorrentGroupResultResponse;
+use Jleagle\Gazelle\Responses\TorrentResponse;
+use Jleagle\Gazelle\Responses\TorrentResultResponse;
+use Jleagle\Gazelle\Responses\TorrentSearchResponse;
+use Jleagle\Gazelle\Responses\TorrentSearchResultResponse;
+use Jleagle\Gazelle\Responses\UserResponse;
+use Jleagle\Gazelle\Responses\UserSearchResponse;
+use Jleagle\Gazelle\Responses\UserSearchResultResponse;
+use Packaged\Helpers\Arrays;
 
 class Gazelle
 {
@@ -36,212 +84,346 @@ class Gazelle
   {
     $this->_username = $username;
     $this->_password = $password;
-    $this->_url = trim($url, '/');
+    $this->setUrl($url);
   }
 
   /**
-   * @return array
+   * @return IndexResponse
    */
   public function getIndex()
   {
-    return $this->_get(
+    $response = $this->_get(
       [
         'action' => 'index',
       ]
     );
+
+    return new IndexResponse($response);
   }
 
   /**
-   * @param int $id - id of the user to display
+   * @param int $userId - id of the user to display
    *
-   * @return array
+   * @return UserResponse
    */
-  public function getUser($id)
+  public function getUser($userId)
   {
-    return $this->_get(
+    $response = $this->_get(
       [
         'action' => 'user',
-        'id'     => $id,
+        'id'     => $userId,
       ]
     );
+
+    return new UserResponse($response);
   }
 
   /**
    * @param int    $page       - page number to display
-   * @param string $type       - one of: inbox or sentbox
-   * @param string $sort       - if set to "unread" then unread messages come first
+   * @param string $type       - GazelleMessagesType
+   * @param string $sort       - GazelleMessagesSort
    * @param string $search     - filter messages by search string
-   * @param string $searchType - one of: subject, message, user
+   * @param string $searchType - GazelleMessagesSearchType
    *
-   * @return array
+   * @return InboxResponse
    */
   public function getInbox(
-    $page = 1, $type = 'inbox', $sort = null, $search = null, $searchType = null
+    $page = 1,
+    $type = GazelleMessagesType::INBOX,
+    $sort = GazelleMessagesSort::NONE,
+    $search = null,
+    $searchType = null
   )
   {
-    return $this->_get(
-      [
-        'action'     => 'inbox',
-        'page'       => $page,
-        'type'       => $type,
-        'sort'       => $sort,
-        'search'     => $search,
-        'searchtype' => $searchType,
-      ]
+    $response = new InboxResponse(
+      $this->_get(
+        [
+          'action'     => 'inbox',
+          'page'       => $page,
+          'type'       => $type,
+          'sort'       => $sort,
+          'search'     => $search,
+          'searchtype' => $searchType,
+        ]
+      )
     );
+
+    foreach($response->messages as $k => $message)
+    {
+      $response->messages[$k] = new InboxResultResponse($message);
+    }
+
+    return $response;
   }
 
   /**
-   * @param int $id - id of the message to display
+   * @param int $conversationId - id of the message to display
    *
-   * @return array
+   * @return InboxConversationResponse
    */
-  public function getInboxConversation($id)
+  public function getInboxConversation($conversationId)
   {
-    return $this->_get(
-      [
-        'action' => 'inbox',
-        'type'   => 'viewconv',
-        'id'     => $id,
-      ]
+    $response = new InboxConversationResponse(
+      $this->_get(
+        [
+          'action' => 'inbox',
+          'type'   => 'viewconv',
+          'id'     => $conversationId,
+        ]
+      )
     );
+
+    foreach($response->messages as $k => $conversation)
+    {
+      $response->messages[$k] = new InboxConversationResultResponse(
+        $conversation
+      );
+    }
+
+    return $response;
   }
 
   /**
-   * @param string $type  - one of: torrents, tags, users
-   * @param int    $limit - one of 10, 25, 100
+   * @param string $type  - GazelleTopTenType
+   * @param int    $limit - one of 10, 100, 250
    *
-   * @return array
+   * @return TopTenResponse[]
    */
-  public function getTopTen($type = 'torrents', $limit = 25)
+  public function getTopTen($type = GazelleTopTenType::TORRENTS, $limit = 10)
   {
-    return $this->_get(
+    $response = $this->_get(
       [
         'action' => 'top10',
         'type'   => $type,
         'limit'  => $limit,
       ]
     );
+
+    foreach($response as $k => $section)
+    {
+      $response[$k] = new TopTenResponse($section);
+
+      foreach($response[$k]->results as $k2 => $result)
+      {
+        $response[$k]->results[$k2] = new TopTenResultResponse($result);
+      }
+    }
+
+    return $response;
   }
 
   /**
    * @param string $search - The search term
    * @param int    $page   - page to display
    *
-   * @return array
+   * @return UserSearchResponse
    */
-  public function searchUsers($search, $page = 1)
+  public function getUsers($search, $page = 1)
   {
-    return $this->_get(
-      [
-        'action' => 'usersearch',
-        'search' => $search,
-        'page'   => $page,
-      ]
+    $response = new UserSearchResponse(
+      $this->_get(
+        [
+          'action' => 'usersearch',
+          'search' => $search,
+          'page'   => $page,
+        ]
+      )
     );
+
+    foreach($response->results as $k => $user)
+    {
+      $response->results[$k] = new UserSearchResultResponse($user);
+    }
+
+    return $response;
   }
 
   /**
-   * @param string $search      - search term
-   * @param string $tag         - tags to search by (comma separated)
-   * @param int    $page        - page to display
-   * @param int    $tags_type   - 0 for any, 1 for match all
-   * @param bool   $show_filled - Include filled requests in results - true or false
+   * @param string   $search     - search term
+   * @param int      $page       - page to display
+   * @param string[] $tags       - tags to search
+   * @param int      $tagsType   - GazelleRequestsTagsType
+   * @param bool     $showFilled - GazelleRequestsShowFilled
    *
-   * @return mixed
+   * @return RequestsResponse
    */
   public function getRequests(
-    $search = '', $tag = '', $page = 1, $tags_type = 0, $show_filled = false
+    $search = '',
+    $page = 1,
+    $tags = [],
+    $tagsType = GazelleRequestsTagsType::ANY,
+    $showFilled = GazelleRequestsShowFilled::HIDE_FILLED
   )
   {
-    return $this->_get(
-      [
-        'action'      => 'requests',
-        'search'      => $search,
-        'page'        => $page,
-        'tag'         => $tag,
-        'tags_type'   => $tags_type,
-        'show_filled' => $show_filled,
-      ]
+    $tags = implode(',', $tags);
+
+    $response = new RequestsResponse(
+      $this->_get(
+        [
+          'action'      => 'requests',
+          'search'      => $search,
+          'page'        => $page,
+          'tag'         => $tags,
+          'tags_type'   => $tagsType,
+          'show_filled' => $showFilled,
+        ]
+      )
     );
+
+    foreach($response->results as $k => $request)
+    {
+      $response->results[$k] = new RequestsResultResponse($request);
+    }
+
+    return $response;
   }
 
   /**
    * @param string $searchstr - string to search for
    * @param int    $page      - page to display
    *
-   * @return array
+   * @return TorrentSearchResponse
    */
-  public function searchTorrents($searchstr, $page = 1)
+  public function getTorrents($searchstr, $page = 1)
   {
-    return $this->_get(
-      [
-        'action'    => 'browse',
-        'searchstr' => $searchstr,
-        'page'      => $page,
-      ]
+    $response = new TorrentSearchResponse(
+      $this->_get(
+        [
+          'action'    => 'browse',
+          'searchstr' => $searchstr,
+          'page'      => $page,
+        ]
+      )
     );
+
+    foreach($response->results as $k => $torrent)
+    {
+      $response->results[$k] = new TorrentSearchResultResponse($torrent);
+    }
+
+    return $response;
   }
 
   /**
-   * @param $type - BookmarkType
-   *
-   * @return array
+   * @return BookmarkArtistResponse[]
    */
-  public function getBookmarks($type = BookmarkType::TORRENTS)
+  public function getArtistBookmarks()
   {
-    return $this->_get(
+    $response = $this->_get(
       [
         'action' => 'bookmarks',
-        'type'   => $type,
+        'type'   => 'artists',
       ]
     );
+
+    $response = Arrays::value($response, 'artists', []);
+
+    foreach($response as $k => $bookmark)
+    {
+      $response[$k] = new BookmarkArtistResponse($bookmark);
+    }
+
+    return $response;
   }
 
   /**
-   * @param int $showunread - 1 to show only unread, 0 for all subscriptions
-   *
-   * @return array
+   * @return BookmarkTorrentResponse[]
    */
-  public function getSubscriptions($showunread = 1)
+  public function getTorrentBookmarks()
   {
-    return $this->_get(
+    $response = $this->_get(
+      [
+        'action' => 'bookmarks',
+        'type'   => 'torrents',
+      ]
+    );
+
+    $response = Arrays::value($response, 'bookmarks', []);
+
+    foreach($response as $k => $bookmark)
+    {
+      $response[$k] = new BookmarkTorrentResponse($bookmark);
+    }
+
+    return $response;
+  }
+
+  /**
+   * @param bool $showunread - 1 to show only unread, 0 for all subscriptions
+   *
+   * @return SubscriptionResponse[]
+   */
+  public function getSubscriptions($showunread = true)
+  {
+    $response = $this->_get(
       [
         'action'     => 'subscriptions',
-        'showunread' => $showunread,
+        'showunread' => $showunread ? 1 : 0,
       ]
     );
+
+    $response = Arrays::value($response, 'threads', []);
+
+    foreach($response as $k => $item)
+    {
+      $response[$k] = new SubscriptionResponse($item);
+    }
+
+    return $response;
   }
 
   /**
-   * @return array
+   * @return ForumCategoriesResponse[]
    */
   public function getForumCategories()
   {
-    return $this->_get(
+    $response = $this->_get(
       [
         'action' => 'forum',
         'type'   => 'main',
       ]
     );
+
+    $response = Arrays::value($response, 'categories', []);
+
+    foreach($response as $k => $section)
+    {
+      $response[$k] = new ForumCategoriesResponse($section);
+
+      foreach($response[$k]->forums as $k2 => $result)
+      {
+        $response[$k]->forums[$k2] = new ForumCategoriesResultResponse($result);
+      }
+    }
+
+    return $response;
   }
 
   /**
    * @param int $forumid - id of the forum to display
    * @param int $page    - the page to display
    *
-   * @return array
+   * @return ForumResponse
    */
   public function getForum($forumid, $page = 1)
   {
-    return $this->_get(
-      [
-        'action'  => 'forum',
-        'type'    => 'viewforum',
-        'forumid' => $forumid,
-        'page'    => $page,
-      ]
+    $response = new ForumResponse(
+      $this->_get(
+        [
+          'action'  => 'forum',
+          'type'    => 'viewforum',
+          'forumid' => $forumid,
+          'page'    => $page,
+        ]
+      )
     );
+
+    foreach($response->threads as $k => $message)
+    {
+      $response->threads[$k] = new ForumResultResponse($message);
+    }
+
+    return $response;
   }
 
   /**
@@ -250,153 +432,229 @@ class Gazelle
    * @param int $page           - page to display
    * @param int $updatelastread - set to 1 to not update the last read id
    *
-   * @return array
+   * @return ForumThreadResponse
    */
   public function getForumThread(
     $threadid, $postid = null, $page = 1, $updatelastread = 0
   )
   {
-    return $this->_get(
-      [
-        'action'         => 'forum',
-        'type'           => 'viewthread',
-        'threadid'       => $threadid,
-        'postid'         => $postid,
-        'page'           => $page,
-        'updatelastread' => $updatelastread,
-      ]
+    $response = new ForumThreadResponse(
+      $this->_get(
+        [
+          'action'         => 'forum',
+          'type'           => 'viewthread',
+          'threadid'       => $threadid,
+          'postid'         => $postid,
+          'page'           => $page,
+          'updatelastread' => $updatelastread,
+        ]
+      )
     );
+
+    foreach($response->posts as $k => $message)
+    {
+      $response->posts[$k] = new ForumThreadResultResponse($message);
+    }
+
+    return $response;
   }
 
   /**
-   * @param int    $id         - artist's id
+   * @param int    $artistId   - artist's id
    * @param string $artistname - Artist's Name
    *
-   * @return array
+   * @return ArtistResponse
    */
-  public function getArtist($id = null, $artistname = null)
+  public function getArtist($artistId = null, $artistname = null)
   {
-    return $this->_get(
-      [
-        'action'     => 'artist',
-        'id'         => $id,
-        'artistname' => $artistname,
-      ]
+    return new ArtistResponse(
+      $this->_get(
+        [
+          'action'     => 'artist',
+          'id'         => $artistId,
+          'artistname' => $artistname,
+        ]
+      )
     );
   }
 
   /**
-   * @param int    $id   - torrent's id
-   * @param string $hash - torrent's hash
+   * @param int    $torrentId - torrent's id
+   * @param string $hash      - torrent's hash
    *
-   * @return array
+   * @return TorrentResponse
    */
-  public function getTorrent($id = null, $hash = null)
+  public function getTorrent($torrentId = null, $hash = null)
   {
-    $hash = strtoupper($hash);
+    if($hash)
+    {
+      $hash = strtoupper($hash);
+    }
 
-    return $this->_get(
-      [
-        'action' => 'torrent',
-        'id'     => $id,
-        'hash'   => $hash,
-      ]
+    $response = new TorrentResponse(
+      $this->_get(
+        [
+          'action' => 'torrent',
+          'id'     => $torrentId,
+          'hash'   => $hash,
+        ]
+      )
+    );
+
+    $response->group = new TorrentGroupInfoResponse($response->group);
+    $response->torrent = new TorrentResultResponse($response->torrent);
+
+    return $response;
+  }
+
+  /**
+   * @param int    $groupId - torrent's group id
+   * @param string $hash    - hash of a torrent in the torrent group
+   *
+   * @return TorrentGroupResponse
+   */
+  public function getTorrentGroup($groupId = null, $hash = null)
+  {
+    if($hash)
+    {
+      $hash = strtoupper($hash);
+    }
+
+    $response = new TorrentGroupResponse(
+      $this->_get(
+        [
+          'action' => 'torrentgroup',
+          'id'     => $groupId,
+          'hash'   => $hash,
+        ]
+      )
+    );
+
+    $response->group = new TorrentGroupInfoResponse($response->group);
+
+    foreach($response->torrents as $k => $request)
+    {
+      $response->torrents[$k] = new TorrentGroupResultResponse($request);
+    }
+
+    return $response;
+  }
+
+  /**
+   * @param int $requestId - request id
+   * @param int $page      - page of the comments to display
+   *
+   * @return RequestResponse
+   */
+  public function getRequest($requestId, $page = 1)
+  {
+    return new RequestResponse(
+      $this->_get(
+        [
+          'action' => 'request',
+          'id'     => $requestId,
+          'page'   => $page,
+        ]
+      )
     );
   }
 
   /**
-   * @param int    $id   - torrent's group id
-   * @param string $hash - hash of a torrent in the torrent group
+   * @param int $collageId - collage's id
    *
-   * @return array
+   * @return CollageResponse
    */
-  public function getTorrentGroup($id = null, $hash = null)
+  public function getCollage($collageId)
   {
-    $hash = strtoupper($hash);
-
-    return $this->_get(
-      [
-        'action' => 'torrentgroup',
-        'id'     => $id,
-        'hash'   => $hash,
-      ]
+    $response = new CollageResponse(
+      $this->_get(
+        [
+          'action' => 'collage',
+          'id'     => $collageId,
+        ]
+      )
     );
-  }
 
-  /**
-   * @param int $id   - request id
-   * @param int $page - page of the comments to display
-   *
-   * @return array
-   */
-  public function getRequest($id, $page = 1)
-  {
-    return $this->_get(
-      [
-        'action' => 'request',
-        'id'     => $id,
-        'page'   => $page,
-      ]
-    );
-  }
+    foreach($response->torrentgroups as $k => $request)
+    {
+      $response->torrentgroups[$k] = new CollageResultResponse($request);
+    }
 
-  /**
-   * @param int $id - collage's id
-   *
-   * @return array
-   */
-  public function getCollage($id)
-  {
-    return $this->_get(
-      [
-        'action' => 'collage',
-        'id'     => $id,
-      ]
-    );
+    return $response;
   }
 
   /**
    * @param int $page - page number to display
    *
-   * @return array
+   * @return NotificationsResponse
    */
   public function getNotifications($page = 1)
   {
-    return $this->_get(
-      [
-        'action' => 'notifications',
-        'page'   => $page,
-      ]
+    $response = new NotificationsResponse(
+      $this->_get(
+        [
+          'action' => 'notifications',
+          'page'   => $page,
+        ]
+      )
     );
+
+    foreach($response->results as $k => $request)
+    {
+      $response->results[$k] = new NotificationsResultResponse($request);
+    }
+
+    return $response;
   }
 
   /**
-   * @param int $id    - id of artist
-   * @param int $limit - maximum number of results to return (fewer might be returned)
+   * @param int $artistId - id of artist
+   * @param int $limit    - maximum number of results to return (fewer might be returned)
    *
-   * @return array
+   * @return SimilarArtistsResponse
    */
-  public function getSimilarArtists($id, $limit = 10)
+  public function getSimilarArtists($artistId, $limit = 10)
   {
-    return $this->_get(
+    $response = $this->_get(
       [
         'action' => 'similar_artists',
-        'id'     => $id,
+        'id'     => $artistId,
         'limit'  => $limit,
       ]
     );
+
+    $return = new SimilarArtistsResponse();
+    foreach($response as $artist)
+    {
+      $return->items[] = new SimilarArtistsResultResponse($artist);
+    }
+    return $return;
   }
 
   /**
-   * @return array
+   * @return AnnouncementsResponse
    */
   public function getAnnouncements()
   {
-    return $this->_get(
-      [
-        'action' => 'announcements',
-      ]
+    $response = new AnnouncementsResponse(
+      $this->_get(
+        [
+          'action' => 'announcements',
+        ]
+      )
     );
+
+    foreach($response->announcements as $k => $request)
+    {
+      $response->announcements[$k] = new AnnouncementsResultResponse($request);
+    }
+
+    foreach($response->blogPosts as $k => $request)
+    {
+      $response->blogPosts[$k] = new AnnouncementsBlogResultResponse($request);
+    }
+
+    return $response;
   }
 
   /**
@@ -406,7 +664,7 @@ class Gazelle
    */
   public function setUrl($url)
   {
-    $this->_url = $url;
+    $this->_url = trim($url, '/');
     return $this;
   }
 
@@ -433,6 +691,10 @@ class Gazelle
    * @param array $params
    *
    * @return mixed
+   *
+   * @throws GazelleApiFailureException
+   * @throws CurlException
+   * @throws CurlInvalidJsonException
    */
   protected function _get($params = [])
   {
@@ -453,10 +715,23 @@ class Gazelle
     }
 
     // Make the request
-    return Curl
+    $response = Curl
       ::get($this->_url . '/ajax.php', $params)
       ->setCookies($this->_cookieJar)
       ->run()
       ->getJson();
+
+    if(isset($response['status']))
+    {
+      if($response['status'] != GazelleApiStatus::SUCCESS)
+      {
+        throw new GazelleApiFailureException();
+      }
+      return $response['response'];
+    }
+    else
+    {
+      return $response;
+    }
   }
 }

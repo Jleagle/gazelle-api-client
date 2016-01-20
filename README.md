@@ -2,33 +2,25 @@
 
 A helper class to access the API on [Gazelle](https://github.com/WhatCD/Gazelle/wiki/JSON-API-Documentation) sites
 
-### Installation
-
-Add Gazelle to composer and run `composer update`:
-
-```json
-"require": {
-    "jleagle/gazelle-api-client": "*"
-}
-```
-
 ### Usage
 
 Instantiate the class using your website username and password:
 
 ```php
-$gazelle = new Gazelle(
-	$username,
-	$password
-);
+$gazelle = new Gazelle(USER, PASS);
 ```
 
 Example API calls:
 
 ```php
-// Get the forums
-$forums = $gazelle->getForumMain();
-
-// Get announcements
-$announcements = $gazelle->announcements();
+$gazelle->getIndex();
+$gazelle->getInbox();
+$gazelle->getTopTen();
+$gazelle->getRequests();
+$gazelle->getArtistBookmarks();
+$gazelle->getTorrentBookmarks();
+$gazelle->getSubscriptions();
+$gazelle->getForumCategories();
+$gazelle->getNotifications();
+$gazelle->getAnnouncements();
 ```
